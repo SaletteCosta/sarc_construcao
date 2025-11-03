@@ -49,28 +49,30 @@ public class ReservationService {
     }
 
     public Reservation create(ReservationDTO dto) {
-        CourseClass courseClass = courseClassRepo.findById(dto.getCourseClassId())
-                .orElseThrow(() -> new NotFoundException("CourseClass not found"));
-        Resource resource = resourceRepo.findById(dto.getResourceId())
-                .orElseThrow(() -> new NotFoundException("Resource not found"));
-        ScheduleSlot schedule = scheduleSlotRepo.findById(dto.getScheduleSlotId())
-                .orElseThrow(() -> new NotFoundException("ScheduleSlot not found"));
-         boolean exists = reservationRepo.existsByResourceAndReservationDateAndStartTime(
-                resource, dto.getReservationDate(), dto.getStartTime()
-        );
-        if (exists)
-            throw new BadRequestException("Resource already booked for this time.");
+    CourseClass courseClass = courseClassRepo.findById(dto.getCourseClassId())
+            .orElseThrow(() -> new NotFoundException("CourseClass not found"));
+    Resource resource = resourceRepo.findById(dto.getResourceId())
+            .orElseThrow(() -> new NotFoundException("Resource not found"));
+    ScheduleSlot schedule = scheduleSlotRepo.findById(dto.getScheduleSlotId())
+            .orElseThrow(() -> new NotFoundException("ScheduleSlot not found"));
 
-        Reservation r = new Reservation();
-        r.setCourseClass(courseClass);
-        r.setResource(resource);
-        r.setScheduleSlot(schedule);
-        r.setReservationDate(dto.getReservationDate());
-        r.setStartTime(dto.getStartTime());
-        r.setEndTime(dto.getEndTime());
-        r.setStatus(ReservationStatus.PENDING);
+    boolean overlaps = reservationRepo.existsOverlappingReservation(
+            resource,
+            dto.getReservationDate(),
+            dto.getStartTime(),
+            dto.getEndTime()
+    );
 
-        return reservationRepo.save(r);
+    Reservation reservation = new Reservation();
+    reservation.setCourseClass(courseClass);
+    reservation.setResource(resource);
+    reservation.setScheduleSlot(schedule);
+    reservation.setReservationDate(dto.getReservationDate());
+    reservation.setStartTime(dto.getStartTime());
+    reservation.setEndTime(dto.getEndTime());
+    reservation.setStatus(overlaps ? ReservationStatus.DENIED : ReservationStatus.CONFIRMED);
+
+    return reservationRepo.save(reservation);
     }
 
     public void delete(Long id) {
