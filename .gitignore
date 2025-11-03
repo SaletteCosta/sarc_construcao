@@ -1,0 +1,26 @@
+cat > .gitignore << 'EOF'
+.DS_Store
+target/
+*.class
+*.log
+.vscode/
+.idea/
+*.iml
+.gradle/
+build/
+out/
+bin/
+.settings/
+.classpath
+.project
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+*.bak
+hs_err_pid*
+replay_pid*
+EOF
+
+git add .gitignore
+git commit -m "add .gitignore"
