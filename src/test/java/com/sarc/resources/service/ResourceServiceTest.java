@@ -1,12 +1,14 @@
 
-package com.sarc.resources.service;
+package com.sarc.scheduleslot.service;
 
 import com.sarc.domain.Resource;
 import com.sarc.domain.ResourceType;
+import com.sarc.domain.ScheduleSlot;
 import com.sarc.exception.BadRequestException;
 import com.sarc.exception.NotFoundException;
 import com.sarc.repository.ResourceRepository;
-import com.sarc.resources.dto.ResourceDTO;
+import com.sarc.repository.ScheduleSlotRepository;
+import com.sarc.scheduleslot.dto.ScheduleSlotDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -25,179 +28,218 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 /**
- * Testes unitários para ResourceService
+ * Testes unitários para ScheduleSlotService
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("ResourceService - Unit Tests")
-class ResourceServiceTest {
+@DisplayName("ScheduleSlotService - Unit Tests")
+class ScheduleSlotServiceTest {
+
+    @Mock
+    private ScheduleSlotRepository slotRepository;
 
     @Mock
     private ResourceRepository resourceRepository;
 
     @InjectMocks
-    private ResourceService resourceService;
+    private ScheduleSlotService scheduleSlotService;
 
     private Resource testResource;
-    private ResourceDTO testDTO;
+    private ScheduleSlot testSlot;
+    private ScheduleSlotDTO testDTO;
 
     @BeforeEach
     void setUp() {
         testResource = new Resource();
         testResource.setResourceId(1L);
         testResource.setName("Test Lab");
-        testResource.setType(ResourceType.LABORATORY);
-        testResource.setCapacity(30);
-        testResource.setLocalization("Building A - Room 101");
+        testResource.setType(ResourceType.LAB);
 
-        testDTO = new ResourceDTO();
-        testDTO.setName("New Lab");
-        testDTO.setType(ResourceType.LABORATORY);
-        testDTO.setCapacity(25);
-        testDTO.setLocalization("Building B - Room 202");
+        testSlot = new ScheduleSlot();
+        testSlot.setScheduleId(1L);
+        testSlot.setResource(testResource);
+        testSlot.setDayOfWeek(1); // Monday
+        testSlot.setStartTime(LocalTime.of(8, 0));
+        testSlot.setEndTime(LocalTime.of(10, 0));
+
+        testDTO = new ScheduleSlotDTO();
+        testDTO.setResourceId(1L);
+        testDTO.setDayOfWeek(2); // Tuesday
+        testDTO.setStartTime(LocalTime.of(10, 0));
+        testDTO.setEndTime(LocalTime.of(12, 0));
     }
 
     @Test
-    @DisplayName("Deve retornar todos os recursos")
+    @DisplayName("Deve retornar todos os slots de horário")
     void testGetAll_Success() {
-        List<Resource> resources = Arrays.asList(testResource, new Resource());
-        when(resourceRepository.findAll()).thenReturn(resources);
+        List<ScheduleSlot> slots = Arrays.asList(testSlot, new ScheduleSlot());
+        when(slotRepository.findAll()).thenReturn(slots);
 
-        List<Resource> result = resourceService.getAll();
+        List<ScheduleSlot> result = scheduleSlotService.getAll();
 
         assertThat(result).hasSize(2);
-        verify(resourceRepository, times(1)).findAll();
+        verify(slotRepository, times(1)).findAll();
     }
 
     @Test
-    @DisplayName("Deve retornar recurso por ID")
-    void testGetById_Success() {
+    @DisplayName("Deve criar slot de horário com dados válidos")
+    void testCreate_Success() {
         when(resourceRepository.findById(1L)).thenReturn(Optional.of(testResource));
+        when(slotRepository.save(any(ScheduleSlot.class))).thenReturn(testSlot);
 
-        Resource result = resourceService.getById(1L);
+        ScheduleSlot result = scheduleSlotService.create(testDTO);
 
         assertThat(result).isNotNull();
-        assertThat(result.getResourceId()).isEqualTo(1L);
-        assertThat(result.getName()).isEqualTo("Test Lab");
         verify(resourceRepository, times(1)).findById(1L);
+        verify(slotRepository, times(1)).save(any(ScheduleSlot.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar BadRequestException quando resource ID é nulo")
+    void testCreate_NullResourceId() {
+        testDTO.setResourceId(null);
+
+        assertThatThrownBy(() -> scheduleSlotService.create(testDTO))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Resource ID is required");
     }
 
     @Test
     @DisplayName("Deve lançar NotFoundException quando recurso não existe")
-    void testGetById_NotFound() {
+    void testCreate_ResourceNotFound() {
         when(resourceRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> resourceService.getById(999L))
+        assertThatThrownBy(() -> scheduleSlotService.create(testDTO))
                 .isInstanceOf(NotFoundException.class)
-                .hasMessageContaining("Resource with ID 999 not found");
+                .hasMessageContaining("Resource with ID 1 not found");
     }
 
     @Test
-    @DisplayName("Deve criar recurso com dados válidos")
-    void testCreate_Success() {
-        when(resourceRepository.save(any(Resource.class))).thenReturn(testResource);
+    @DisplayName("Deve deletar slot existente")
+    void testDelete_Success() {
+        when(slotRepository.existsById(1L)).thenReturn(true);
+        doNothing().when(slotRepository).deleteById(1L);
 
-        Resource result = resourceService.create(testDTO);
+        scheduleSlotService.delete(1L);
 
-        assertThat(result).isNotNull();
-        verify(resourceRepository, times(1)).save(any(Resource.class));
+        verify(slotRepository, times(1)).existsById(1L);
+        verify(slotRepository, times(1)).deleteById(1L);
     }
 
     @Test
-    @DisplayName("Deve lançar BadRequestException quando nome está vazio")
-    void testCreate_EmptyName() {
-        testDTO.setName("");
+    @DisplayName("Deve lançar NotFoundException ao deletar slot inexistente")
+    void testDelete_NotFound() {
+        when(slotRepository.existsById(999L)).thenReturn(false);
 
-        assertThatThrownBy(() -> resourceService.create(testDTO))
-                .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("Resource name cannot be empty");
+        assertThatThrownBy(() -> scheduleSlotService.delete(999L))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Schedule slot with ID 999 not found");
     }
 
     @Test
-    @DisplayName("Deve lançar BadRequestException quando nome é nulo")
-    void testCreate_NullName() {
-        testDTO.setName(null);
-
-        assertThatThrownBy(() -> resourceService.create(testDTO))
-                .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("Resource name cannot be empty");
-    }
-
-    @Test
-    @DisplayName("Deve atualizar recurso existente")
-    void testUpdate_Success() {
+    @DisplayName("Deve criar slots para diferentes dias da semana")
+    void testCreate_DifferentDays() {
         when(resourceRepository.findById(1L)).thenReturn(Optional.of(testResource));
-        when(resourceRepository.save(any(Resource.class))).thenReturn(testResource);
+        when(slotRepository.save(any(ScheduleSlot.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Resource result = resourceService.update(1L, testDTO);
+        for (int day = 0; day <= 6; day++) {
+            testDTO.setDayOfWeek(day);
+            ScheduleSlot result = scheduleSlotService.create(testDTO);
+            assertThat(result.getDayOfWeek()).isEqualTo(day);
+        }
+
+        verify(slotRepository, times(7)).save(any(ScheduleSlot.class));
+    }
+
+    @Test
+    @DisplayName("Deve retornar slot por ID quando existe")
+    void testGetById_Success() {
+        when(slotRepository.findById(1L)).thenReturn(Optional.of(testSlot));
+
+        ScheduleSlot result = scheduleSlotService.getById(1L);
 
         assertThat(result).isNotNull();
-        verify(resourceRepository, times(1)).save(any(Resource.class));
+        assertThat(result.getScheduleId()).isEqualTo(1L);
+        verify(slotRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    @DisplayName("Deve lançar NotFoundException quando slot não existe")
+    void testGetById_NotFound() {
+        when(slotRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> scheduleSlotService.getById(999L))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Schedule slot with ID 999 not found");
+    }
+
+    @Test
+    @DisplayName("Deve atualizar slot com dados válidos")
+    void testUpdate_Success() {
+        when(slotRepository.findById(1L)).thenReturn(Optional.of(testSlot));
+        when(slotRepository.save(any(ScheduleSlot.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ScheduleSlotDTO updateDTO = new ScheduleSlotDTO();
+        updateDTO.setDayOfWeek(3);
+        updateDTO.setStartTime(LocalTime.of(14, 0));
+        updateDTO.setEndTime(LocalTime.of(16, 0));
+
+        ScheduleSlot result = scheduleSlotService.update(1L, updateDTO);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getDayOfWeek()).isEqualTo(3);
+        verify(slotRepository, times(1)).findById(1L);
+        verify(slotRepository, times(1)).save(any(ScheduleSlot.class));
     }
 
     @Test
     @DisplayName("Deve atualizar apenas campos fornecidos")
     void testUpdate_PartialUpdate() {
-        ResourceDTO partialDTO = new ResourceDTO();
-        partialDTO.setName("Updated Name");
-        
-        when(resourceRepository.findById(1L)).thenReturn(Optional.of(testResource));
-        when(resourceRepository.save(any(Resource.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(slotRepository.findById(1L)).thenReturn(Optional.of(testSlot));
+        when(slotRepository.save(any(ScheduleSlot.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Resource result = resourceService.update(1L, partialDTO);
+        ScheduleSlotDTO updateDTO = new ScheduleSlotDTO();
+        updateDTO.setStartTime(LocalTime.of(9, 0));
+        // Outros campos não fornecidos
 
-        assertThat(result.getName()).isEqualTo("Updated Name");
-        verify(resourceRepository, times(1)).save(any(Resource.class));
+        ScheduleSlot result = scheduleSlotService.update(1L, updateDTO);
+
+        assertThat(result.getStartTime()).isEqualTo(LocalTime.of(9, 0));
+        assertThat(result.getDayOfWeek()).isEqualTo(1); // manteve o antigo
+        verify(slotRepository, times(1)).save(any(ScheduleSlot.class));
     }
 
     @Test
-    @DisplayName("Deve lançar NotFoundException ao atualizar recurso inexistente")
+    @DisplayName("Deve lançar NotFoundException ao atualizar slot inexistente")
     void testUpdate_NotFound() {
-        when(resourceRepository.findById(anyLong())).thenReturn(Optional.empty());
+        when(slotRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> resourceService.update(999L, testDTO))
+        ScheduleSlotDTO updateDTO = new ScheduleSlotDTO();
+        updateDTO.setDayOfWeek(2);
+
+        assertThatThrownBy(() -> scheduleSlotService.update(999L, updateDTO))
                 .isInstanceOf(NotFoundException.class)
-                .hasMessageContaining("Resource with ID 999 not found");
+                .hasMessageContaining("Schedule slot with ID 999 not found");
+        verify(slotRepository, never()).save(any(ScheduleSlot.class));
     }
 
     @Test
-    @DisplayName("Deve deletar recurso existente")
-    void testDelete_Success() {
-        when(resourceRepository.existsById(1L)).thenReturn(true);
-        doNothing().when(resourceRepository).deleteById(1L);
+    @DisplayName("Deve atualizar recurso do slot")
+    void testUpdate_ChangeResource() {
+        Resource newResource = new Resource();
+        newResource.setResourceId(2L);
+        newResource.setName("New Lab");
 
-        resourceService.delete(1L);
+        when(slotRepository.findById(1L)).thenReturn(Optional.of(testSlot));
+        when(resourceRepository.findById(2L)).thenReturn(Optional.of(newResource));
+        when(slotRepository.save(any(ScheduleSlot.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        verify(resourceRepository, times(1)).existsById(1L);
-        verify(resourceRepository, times(1)).deleteById(1L);
-    }
+        ScheduleSlotDTO updateDTO = new ScheduleSlotDTO();
+        updateDTO.setResourceId(2L);
 
-    @Test
-    @DisplayName("Deve lançar NotFoundException ao deletar recurso inexistente")
-    void testDelete_NotFound() {
-        when(resourceRepository.existsById(999L)).thenReturn(false);
+        ScheduleSlot result = scheduleSlotService.update(1L, updateDTO);
 
-        assertThatThrownBy(() -> resourceService.delete(999L))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessageContaining("Resource with ID 999 not found");
-    }
-
-    @Test
-    @DisplayName("Deve criar recursos com diferentes tipos")
-    void testCreate_DifferentTypes() {
-        when(resourceRepository.save(any(Resource.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        testDTO.setType(ResourceType.CLASSROOM);
-        Resource classroom = resourceService.create(testDTO);
-        assertThat(classroom.getType()).isEqualTo(ResourceType.CLASSROOM);
-
-        testDTO.setType(ResourceType.LABORATORY);
-        Resource lab = resourceService.create(testDTO);
-        assertThat(lab.getType()).isEqualTo(ResourceType.LABORATORY);
-
-        testDTO.setType(ResourceType.AUDITORIUM);
-        Resource auditorium = resourceService.create(testDTO);
-        assertThat(auditorium.getType()).isEqualTo(ResourceType.AUDITORIUM);
-
-        verify(resourceRepository, times(3)).save(any(Resource.class));
+        assertThat(result.getResource().getResourceId()).isEqualTo(2L);
+        verify(resourceRepository, times(1)).findById(2L);
+        verify(slotRepository, times(1)).save(any(ScheduleSlot.class));
     }
 }

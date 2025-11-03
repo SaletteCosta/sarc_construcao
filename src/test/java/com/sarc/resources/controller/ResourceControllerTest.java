@@ -49,13 +49,13 @@ class ResourceControllerTest {
         testResource = new Resource();
         testResource.setResourceId(1L);
         testResource.setName("Test Lab");
-        testResource.setType(ResourceType.LABORATORY);
+        testResource.setType(ResourceType.LAB);
         testResource.setCapacity(30);
         testResource.setLocalization("Building A");
 
         testDTO = new ResourceDTO();
         testDTO.setName("New Lab");
-        testDTO.setType(ResourceType.LABORATORY);
+        testDTO.setType(ResourceType.LAB);
         testDTO.setCapacity(25);
         testDTO.setLocalization("Building B");
     }

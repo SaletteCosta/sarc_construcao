@@ -51,7 +51,7 @@ class ScheduleSlotControllerTest {
         testResource = new Resource();
         testResource.setResourceId(1L);
         testResource.setName("Test Lab");
-        testResource.setType(ResourceType.LABORATORY);
+        testResource.setType(ResourceType.LAB);
 
         testSlot = new ScheduleSlot();
         testSlot.setScheduleId(1L);

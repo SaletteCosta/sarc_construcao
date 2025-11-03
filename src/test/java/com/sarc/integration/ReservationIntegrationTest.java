@@ -2,7 +2,7 @@ package com.sarc.integration;
 
 import com.sarc.domain.*;
 import com.sarc.repository.*;
-import com.sarc.reservation.dto.ReservationDTO;
+import com.sarc.resources.dto.ReservationDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

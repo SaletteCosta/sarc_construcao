@@ -52,7 +52,7 @@ class ScheduleSlotServiceTest {
         testResource = new Resource();
         testResource.setResourceId(1L);
         testResource.setName("Test Lab");
-        testResource.setType(ResourceType.LABORATORY);
+        testResource.setType(ResourceType.LAB);
 
         testSlot = new ScheduleSlot();
         testSlot.setScheduleId(1L);
@@ -148,5 +148,98 @@ class ScheduleSlotServiceTest {
         }
 
         verify(slotRepository, times(7)).save(any(ScheduleSlot.class));
+    }
+
+    @Test
+    @DisplayName("Deve retornar slot por ID quando existe")
+    void testGetById_Success() {
+        when(slotRepository.findById(1L)).thenReturn(Optional.of(testSlot));
+
+        ScheduleSlot result = scheduleSlotService.getById(1L);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getScheduleId()).isEqualTo(1L);
+        verify(slotRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    @DisplayName("Deve lançar NotFoundException quando slot não existe")
+    void testGetById_NotFound() {
+        when(slotRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> scheduleSlotService.getById(999L))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Schedule slot with ID 999 not found");
+    }
+
+    @Test
+    @DisplayName("Deve atualizar slot com dados válidos")
+    void testUpdate_Success() {
+        when(slotRepository.findById(1L)).thenReturn(Optional.of(testSlot));
+        when(slotRepository.save(any(ScheduleSlot.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ScheduleSlotDTO updateDTO = new ScheduleSlotDTO();
+        updateDTO.setDayOfWeek(3);
+        updateDTO.setStartTime(LocalTime.of(14, 0));
+        updateDTO.setEndTime(LocalTime.of(16, 0));
+
+        ScheduleSlot result = scheduleSlotService.update(1L, updateDTO);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getDayOfWeek()).isEqualTo(3);
+        verify(slotRepository, times(1)).findById(1L);
+        verify(slotRepository, times(1)).save(any(ScheduleSlot.class));
+    }
+
+    @Test
+    @DisplayName("Deve atualizar apenas campos fornecidos")
+    void testUpdate_PartialUpdate() {
+        when(slotRepository.findById(1L)).thenReturn(Optional.of(testSlot));
+        when(slotRepository.save(any(ScheduleSlot.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ScheduleSlotDTO updateDTO = new ScheduleSlotDTO();
+        updateDTO.setStartTime(LocalTime.of(9, 0));
+        // Outros campos não fornecidos
+
+        ScheduleSlot result = scheduleSlotService.update(1L, updateDTO);
+
+        assertThat(result.getStartTime()).isEqualTo(LocalTime.of(9, 0));
+        assertThat(result.getDayOfWeek()).isEqualTo(1); // manteve o antigo
+        verify(slotRepository, times(1)).save(any(ScheduleSlot.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar NotFoundException ao atualizar slot inexistente")
+    void testUpdate_NotFound() {
+        when(slotRepository.findById(999L)).thenReturn(Optional.empty());
+
+        ScheduleSlotDTO updateDTO = new ScheduleSlotDTO();
+        updateDTO.setDayOfWeek(2);
+
+        assertThatThrownBy(() -> scheduleSlotService.update(999L, updateDTO))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Schedule slot with ID 999 not found");
+        verify(slotRepository, never()).save(any(ScheduleSlot.class));
+    }
+
+    @Test
+    @DisplayName("Deve atualizar recurso do slot")
+    void testUpdate_ChangeResource() {
+        Resource newResource = new Resource();
+        newResource.setResourceId(2L);
+        newResource.setName("New Lab");
+
+        when(slotRepository.findById(1L)).thenReturn(Optional.of(testSlot));
+        when(resourceRepository.findById(2L)).thenReturn(Optional.of(newResource));
+        when(slotRepository.save(any(ScheduleSlot.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ScheduleSlotDTO updateDTO = new ScheduleSlotDTO();
+        updateDTO.setResourceId(2L);
+
+        ScheduleSlot result = scheduleSlotService.update(1L, updateDTO);
+
+        assertThat(result.getResource().getResourceId()).isEqualTo(2L);
+        verify(resourceRepository, times(1)).findById(2L);
+        verify(slotRepository, times(1)).save(any(ScheduleSlot.class));
     }
 }

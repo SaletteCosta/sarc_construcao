@@ -70,7 +70,7 @@ class ReservationServiceTest {
         testResource = new Resource();
         testResource.setResourceId(1L);
         testResource.setName("Test Lab");
-        testResource.setType(ResourceType.LABORATORY);
+        testResource.setType(ResourceType.LAB);
 
         // Setup test schedule slot (Monday, 8:00-12:00)
         testSlot = new ScheduleSlot();

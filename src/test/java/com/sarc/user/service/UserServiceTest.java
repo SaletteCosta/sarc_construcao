@@ -223,9 +223,9 @@ class UserServiceTest {
         assertThat(teacher.getRole()).isEqualTo(Role.TEACHER);
 
         // Act & Assert - ADMIN
-        testUserDTO.setRole(Role.ADMIN);
+        testUserDTO.setRole(Role.ROOT);
         User admin = userService.create(testUserDTO);
-        assertThat(admin.getRole()).isEqualTo(Role.ADMIN);
+        assertThat(admin.getRole()).isEqualTo(Role.ROOT);
 
         // Act & Assert - STUDENT
         testUserDTO.setRole(Role.STUDENT);
@@ -233,5 +233,80 @@ class UserServiceTest {
         assertThat(student.getRole()).isEqualTo(Role.STUDENT);
 
         verify(userRepository, times(3)).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Deve atualizar usuário com dados válidos")
+    void testUpdate_Success() {
+        // Arrange
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(userRepository.save(any(User.class))).thenReturn(testUser);
+
+        UserDTO updateDTO = new UserDTO();
+        updateDTO.setName("Updated Name");
+        updateDTO.setEmail("updated@example.com");
+
+        // Act
+        User result = userService.update(1L, updateDTO);
+
+        // Assert
+        assertThat(result).isNotNull();
+        verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Deve atualizar apenas campos fornecidos")
+    void testUpdate_PartialUpdate() {
+        // Arrange
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        UserDTO updateDTO = new UserDTO();
+        updateDTO.setName("Only Name Updated");
+        // email, role e passHash não são fornecidos
+
+        // Act
+        User result = userService.update(1L, updateDTO);
+
+        // Assert
+        assertThat(result.getName()).isEqualTo("Only Name Updated");
+        assertThat(result.getEmail()).isEqualTo("test@example.com"); // manteve o antigo
+        verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar NotFoundException ao atualizar usuário inexistente")
+    void testUpdate_NotFound() {
+        // Arrange
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
+        UserDTO updateDTO = new UserDTO();
+        updateDTO.setName("New Name");
+
+        // Act & Assert
+        assertThatThrownBy(() -> userService.update(999L, updateDTO))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("User with ID 999 not found");
+        verify(userRepository, times(1)).findById(999L);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Deve atualizar role do usuário")
+    void testUpdate_ChangeRole() {
+        // Arrange
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        UserDTO updateDTO = new UserDTO();
+        updateDTO.setRole(Role.ROOT);
+
+        // Act
+        User result = userService.update(1L, updateDTO);
+
+        // Assert
+        assertThat(result.getRole()).isEqualTo(Role.ROOT);
+        verify(userRepository, times(1)).save(any(User.class));
     }
 }
