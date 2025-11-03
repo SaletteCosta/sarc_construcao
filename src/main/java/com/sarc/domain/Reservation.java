@@ -1,5 +1,6 @@
 package com.sarc.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.*;
 
@@ -7,7 +8,9 @@ import java.time.*;
 @Table(name = "reservation", indexes = {
         @Index(name = "idx_res_by_resource_date", columnList = "resource_id,reservation_date")
 })
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) 
 public class Reservation {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reservationId;
@@ -39,18 +42,25 @@ public class Reservation {
 
     public Long getReservationId() { return reservationId; }
     public void setReservationId(Long reservationId) { this.reservationId = reservationId; }
+
     public CourseClass getCourseClass() { return courseClass; }
     public void setCourseClass(CourseClass courseClass) { this.courseClass = courseClass; }
+
     public Resource getResource() { return resource; }
     public void setResource(Resource resource) { this.resource = resource; }
+
     public ScheduleSlot getScheduleSlot() { return scheduleSlot; }
     public void setScheduleSlot(ScheduleSlot scheduleSlot) { this.scheduleSlot = scheduleSlot; }
+
     public LocalDate getReservationDate() { return reservationDate; }
     public void setReservationDate(LocalDate reservationDate) { this.reservationDate = reservationDate; }
+
     public LocalTime getStartTime() { return startTime; }
     public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
+
     public LocalTime getEndTime() { return endTime; }
     public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
+
     public ReservationStatus getStatus() { return status; }
     public void setStatus(ReservationStatus status) { this.status = status; }
 }

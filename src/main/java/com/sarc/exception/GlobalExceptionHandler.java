@@ -7,6 +7,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.dao.DataIntegrityViolationException;
+
 
 import java.util.stream.Collectors;
 
@@ -41,6 +43,21 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining("; "));
         return buildResponse(HttpStatus.BAD_REQUEST, "Constraint violation", errors, request);
     }
+
+@ExceptionHandler(DataIntegrityViolationException.class)
+public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex, WebRequest request) {
+    String message = ex.getMostSpecificCause().getMessage();
+
+    if (message != null && message.contains("idx_user_email")) {
+        message = "Email já cadastrado no sistema.";
+    } else if (message != null && message.contains("uq_schedule_slot")) {
+        message = "Este horário já está reservado para este recurso.";
+    } else {
+        message = "Violação de integridade nos dados enviados.";
+    }
+
+    return buildResponse(HttpStatus.BAD_REQUEST, "Data integrity violation", message, request);
+}
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, WebRequest request) {
