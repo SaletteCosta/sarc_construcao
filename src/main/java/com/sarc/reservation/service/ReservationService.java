@@ -1,7 +1,6 @@
 package com.sarc.reservation.service;
 
 import com.sarc.domain.*;
-import com.sarc.exception.BadRequestException;
 import com.sarc.exception.NotFoundException;
 import com.sarc.repository.*;
 import com.sarc.reservation.dto.ReservationResponseDTO;
