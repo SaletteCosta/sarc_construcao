@@ -10,9 +10,76 @@ services:
       POSTGRES_USER: sarcuser
       POSTGRES_PASSWORD: sarcpass
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    networks:
+      - sarc-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sarcuser -d sarcdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  student-service:
+    build:
+      context: ./student
+      dockerfile: Dockerfile
+    container_name: student
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/sarcdb
+      - SPRING_DATASOURCE_USERNAME=sarcuser
+      - SPRING_DATASOURCE_PASSWORD=sarcpass
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - sarc-network
+    restart: unless-stopped
+
+  course-service:
+    build:
+      context: ./course
+      dockerfile: Dockerfile
+    container_name: course
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/sarcdb
+      - SPRING_DATASOURCE_USERNAME=sarcuser
+      - SPRING_DATASOURCE_PASSWORD=sarcpass
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - sarc-network
+    restart: unless-stopped
+
+  enrollment-service:
+    build:
+      context: ./enrollment
+      dockerfile: Dockerfile
+    container_name: enrollment
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/sarcdb
+      - SPRING_DATASOURCE_USERNAME=sarcuser
+      - SPRING_DATASOURCE_PASSWORD=sarcpass
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - sarc-network
+    restart: unless-stopped
+
+networks:
+  sarc-network:
+    driver: bridge
 
 volumes:
   postgres_data:
