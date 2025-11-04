@@ -3,7 +3,8 @@ package com.student;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -16,7 +17,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(StudentController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 class StudentControllerTest {
 
     @Autowired
@@ -35,7 +37,7 @@ class StudentControllerTest {
         
         when(studentService.createStudent(any(CreateStudentRequest.class))).thenReturn(response);
 
-        mockMvc.perform(post("/api/students")
+        mockMvc.perform(post("/estudantes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -49,7 +51,7 @@ class StudentControllerTest {
         
         when(studentService.findByRegistrationNumber("202301234")).thenReturn(response);
 
-        mockMvc.perform(get("/api/students/matricula/202301234"))
+        mockMvc.perform(get("/estudantes/matricula/202301234"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.registrationNumber").value("202301234"));
@@ -64,7 +66,7 @@ class StudentControllerTest {
         
         when(studentService.findByNameContaining("João")).thenReturn(students);
 
-        mockMvc.perform(get("/api/students/nome/João"))
+        mockMvc.perform(get("/estudantes/nome/João"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.length()").value(2));
@@ -79,9 +81,17 @@ class StudentControllerTest {
         
         when(studentService.findAll()).thenReturn(students);
 
-        mockMvc.perform(get("/api/students"))
+        mockMvc.perform(get("/estudantes"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.length()").value(2));
+    }
+
+    @Test
+    void testHealthCheck() throws Exception {
+        mockMvc.perform(get("/estudantes/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").value("OK"));
     }
 }

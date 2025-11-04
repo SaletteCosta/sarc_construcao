@@ -40,6 +40,25 @@ public class CourseService {
                 .collect(Collectors.toList());
     }
     
+    public List<CourseDTO> findByCourseName(String courseName) {
+        List<Course> courses = courseRepository.findByCourseNameContaining(courseName);
+        return courses.stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public CourseDTO updateSchedule(String courseCode, String scheduleSlot) {
+        List<Course> courses = courseRepository.findByCourseCode(courseCode);
+        if (courses.isEmpty()) {
+            throw new RuntimeException("Disciplina não encontrada com o código: " + courseCode);
+        }
+        Course course = courses.get(0);
+        course.setScheduleSlot(scheduleSlot);
+        Course updated = courseRepository.save(course);
+        return toDTO(updated);
+    }
+    
     public CourseDTO findById(Long id) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Disciplina não encontrada"));
