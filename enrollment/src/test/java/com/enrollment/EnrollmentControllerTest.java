@@ -36,7 +36,7 @@ class EnrollmentControllerTest {
         
         when(enrollmentService.createEnrollment(any(CreateEnrollmentRequest.class))).thenReturn(response);
 
-        mockMvc.perform(post("/api/enrollments")
+        mockMvc.perform(post("/api/matriculas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -53,7 +53,7 @@ class EnrollmentControllerTest {
         
         when(enrollmentService.findByStudentId(1L)).thenReturn(enrollments);
 
-        mockMvc.perform(get("/api/enrollments/student/1"))
+        mockMvc.perform(get("/api/matriculas/estudante/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.length()").value(2));
@@ -68,7 +68,7 @@ class EnrollmentControllerTest {
         
         when(enrollmentService.findByCourseId(1L)).thenReturn(enrollments);
 
-        mockMvc.perform(get("/api/enrollments/course/1"))
+        mockMvc.perform(get("/api/matriculas/disciplina/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.length()").value(2));
@@ -83,7 +83,7 @@ class EnrollmentControllerTest {
         
         when(enrollmentService.findAll()).thenReturn(enrollments);
 
-        mockMvc.perform(get("/api/enrollments"))
+        mockMvc.perform(get("/api/matriculas"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.length()").value(2));
@@ -93,7 +93,7 @@ class EnrollmentControllerTest {
     void testDeleteEnrollment() throws Exception {
         doNothing().when(enrollmentService).deleteEnrollment(1L);
 
-        mockMvc.perform(delete("/api/enrollments/1"))
+        mockMvc.perform(delete("/api/matriculas/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
         

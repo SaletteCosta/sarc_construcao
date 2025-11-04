@@ -35,7 +35,7 @@ class CourseControllerTest {
         
         when(courseService.createCourse(any(CreateCourseRequest.class))).thenReturn(response);
 
-        mockMvc.perform(post("/api/courses")
+        mockMvc.perform(post("/disciplinas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -52,7 +52,7 @@ class CourseControllerTest {
         
         when(courseService.findByCourseCode("MAT001")).thenReturn(courses);
 
-        mockMvc.perform(get("/api/courses/codigo/MAT001"))
+        mockMvc.perform(get("/disciplinas/codigo/MAT001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.length()").value(2));
@@ -67,7 +67,7 @@ class CourseControllerTest {
         
         when(courseService.findByScheduleSlot("A")).thenReturn(courses);
 
-        mockMvc.perform(get("/api/courses/horario/A"))
+        mockMvc.perform(get("/disciplinas/horario/A"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.length()").value(2));
@@ -79,7 +79,7 @@ class CourseControllerTest {
         
         when(courseService.findById(1L)).thenReturn(response);
 
-        mockMvc.perform(get("/api/courses/1"))
+        mockMvc.perform(get("/disciplinas/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.courseCode").value("MAT001"));
@@ -94,7 +94,7 @@ class CourseControllerTest {
         
         when(courseService.findAll()).thenReturn(courses);
 
-        mockMvc.perform(get("/api/courses"))
+        mockMvc.perform(get("/disciplinas"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.length()").value(2));
