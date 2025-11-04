@@ -1,4 +1,4 @@
-# SARC - Sistema de Alocação e Reserva de Componentes
+# Closed CRAS
 
 Sistema desenvolvido com arquitetura de microserviços para gerenciamento de estudantes, disciplinas e matrículas acadêmicas.
 
