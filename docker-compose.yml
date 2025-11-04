@@ -23,17 +23,18 @@ services:
       timeout: 5s
       retries: 5
 
-  student-service:
+  admin-service:
     build:
-      context: ./student
+      context: ./class
       dockerfile: Dockerfile
-    container_name: student
+    container_name: admin-service
     ports:
-      - "8081:8081"
+      - "8084:8081"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/sarcdb
       - SPRING_DATASOURCE_USERNAME=sarcuser
       - SPRING_DATASOURCE_PASSWORD=sarcpass
+      - SERVER_PORT=8081
     depends_on:
       postgres:
         condition: service_healthy
@@ -41,35 +42,18 @@ services:
       - sarc-network
     restart: unless-stopped
 
-  course-service:
+  user-service:
     build:
-      context: ./course
+      context: ./user
       dockerfile: Dockerfile
-    container_name: course
+    container_name: user-service
     ports:
-      - "8082:8082"
+      - "8085:8082"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/sarcdb
       - SPRING_DATASOURCE_USERNAME=sarcuser
       - SPRING_DATASOURCE_PASSWORD=sarcpass
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - sarc-network
-    restart: unless-stopped
-
-  enrollment-service:
-    build:
-      context: ./enrollment
-      dockerfile: Dockerfile
-    container_name: enrollment
-    ports:
-      - "8083:8083"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/sarcdb
-      - SPRING_DATASOURCE_USERNAME=sarcuser
-      - SPRING_DATASOURCE_PASSWORD=sarcpass
+      - SERVER_PORT=8082
     depends_on:
       postgres:
         condition: service_healthy

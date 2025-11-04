@@ -1,184 +1,105 @@
-INSERT INTO students (name, registration_number) VALUES
-('João Silva', '202301234'),
-('Maria Santos', '202301235'),
-('Pedro Oliveira', '202301236'),
-('Ana Costa', '202301237'),
-('Carlos Souza', '202301238'),
-('Juliana Lima', '202301239'),
-('Rafael Pereira', '202301240'),
-('Beatriz Almeida', '202301241'),
-('Lucas Ferreira', '202301242'),
-('Camila Rodrigues', '202301243'),
-('Fernando Martins', '202301244'),
-('Larissa Carvalho', '202301245'),
-('Gustavo Ribeiro', '202301246'),
-('Isabela Nascimento', '202301247'),
-('Thiago Gomes', '202301248'),
-('Amanda Barbosa', '202301249'),
-('Bruno Dias', '202301250'),
-('Natália Fernandes', '202301251'),
-('Vinícius Castro', '202301252'),
-('Gabriela Freitas', '202301253');
 
-('MAT001', 'Cálculo I', 'A'),
-('MAT001', 'Cálculo I', 'B'),
-('MAT001', 'Cálculo I', 'E'),
-('MAT002', 'Álgebra Linear', 'C'),
-('MAT002', 'Álgebra Linear', 'D'),
-('MAT003', 'Geometria Analítica', 'F');
+INSERT INTO subjects (code, name) VALUES
+('MAT001', 'Calculus I'),
+('MAT002', 'Linear Algebra'),
+('MAT003', 'Analytic Geometry'),
+('PHY001', 'Physics I'),
+('PHY002', 'Physics II'),
+('PRG001', 'Introduction to Programming'),
+('PRG002', 'Data Structures'),
+('PRG003', 'Advanced Algorithms'),
+('ENG001', 'Software Engineering I'),
+('ENG002', 'Software Architecture'),
+('ENG003', 'Software Testing'),
+('DBS001', 'Database I'),
+('DBS002', 'Database II'),
+('NET001', 'Computer Networks'),
+('SYS001', 'Operating Systems');
 
-INSERT INTO courses (course_code, course_name, schedule_slot) VALUES
-('FIS001', 'Física I', 'A'),
-('FIS001', 'Física I', 'D'),
-('FIS002', 'Física II', 'B'),
-('FIS002', 'Física II', 'G');
+INSERT INTO classes (code, subject_id, schedule) VALUES
+('MAT001-A', 1, 'MON-08'),
+('MAT001-B', 1, 'TUE-10'),
+('MAT002-A', 2, 'WED-14'),
+('PHY001-A', 4, 'THU-08'),
+('PRG001-A', 6, 'FRI-10'),
+('PRG002-A', 7, 'MON-14'),
+('ENG001-A', 9, 'TUE-08'),
+('DBS001-A', 12, 'WED-10');
 
-INSERT INTO courses (course_code, course_name, schedule_slot) VALUES
-('PRG001', 'Introdução à Programação', 'A'),
-('PRG001', 'Introdução à Programação', 'C'),
-('PRG002', 'Estruturas de Dados', 'B'),
-('PRG002', 'Estruturas de Dados', 'E'),
-('PRG003', 'Algoritmos Avançados', 'D');
+INSERT INTO users (name, registration, type) VALUES
+('John Silva', '202301234', 'STUDENT'),
+('Mary Santos', '202301235', 'STUDENT'),
+('Peter Oliveira', '202301236', 'STUDENT'),
+('Anna Costa', '202301237', 'STUDENT'),
+('Charles Souza', '202301238', 'STUDENT'),
+('Julia Lima', '202301239', 'STUDENT'),
+('Rafael Pereira', '202301240', 'STUDENT'),
+('Beatrice Almeida', '202301241', 'STUDENT'),
+('Luke Ferreira', '202301242', 'STUDENT'),
+('Camila Rodrigues', '202301243', 'STUDENT');
 
-INSERT INTO courses (course_code, course_name, schedule_slot) VALUES
-('ENG001', 'Engenharia de Software I', 'C'),
-('ENG001', 'Engenharia de Software I', 'F'),
-('ENG002', 'Arquitetura de Software', 'A'),
-('ENG003', 'Testes de Software', 'G');
+INSERT INTO users (name, registration, type) VALUES
+('Prof. Robert Mendes', 'PROF001', 'TEACHER'),
+('Prof. Fernanda Souza', 'PROF002', 'TEACHER'),
+('Prof. Edward Lima', 'PROF003', 'TEACHER'),
+('Prof. Marcia Oliveira', 'PROF004', 'TEACHER');
 
-INSERT INTO courses (course_code, course_name, schedule_slot) VALUES
-('BDD001', 'Banco de Dados I', 'B'),
-('BDD001', 'Banco de Dados I', 'E'),
-('BDD002', 'Banco de Dados II', 'D');
+INSERT INTO users (name, registration, type) VALUES
+('System Admin', 'ADMIN001', 'ADMIN');
 
-INSERT INTO courses (course_code, course_name, schedule_slot) VALUES
-('RED001', 'Redes de Computadores', 'A'),
-('RED001', 'Redes de Computadores', 'F'),
-('RED002', 'Segurança de Redes', 'C');
+INSERT INTO class_students (class_id, student_id) VALUES
+(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), -- MAT001-A
+(2, 6), (2, 7), (2, 8), (2, 9), (2, 10), -- MAT001-B
+(3, 1), (3, 3), (3, 5), (3, 7), (3, 9), -- MAT002-A
+(4, 2), (4, 4), (4, 6), (4, 8), (4, 10), -- PHY001-A
+(5, 1), (5, 2), (5, 3), (5, 4), (5, 5), (5, 6), -- PRG001-A
+(6, 7), (6, 8), (6, 9), (6, 10), -- PRG002-A
+(7, 1), (7, 4), (7, 7), (7, 10), -- ENG001-A
+(8, 2), (8, 5), (8, 8); -- DBS001-A
 
-INSERT INTO courses (course_code, course_name, schedule_slot) VALUES
-('SOP001', 'Sistemas Operacionais', 'B'),
-('SOP001', 'Sistemas Operacionais', 'G'),
-('SOP002', 'Sistemas Distribuídos', 'E');
+INSERT INTO items (code, type, name, available) VALUES
+('LAB-001', 'LABORATORY', 'Computer Lab 1', TRUE),
+('LAB-002', 'LABORATORY', 'Computer Lab 2', TRUE),
+('LAB-003', 'LABORATORY', 'Physics Lab', TRUE),
+('LAB-004', 'LABORATORY', 'Chemistry Lab', TRUE),
+('LAB-005', 'LABORATORY', 'Networks Lab', TRUE);
 
-INSERT INTO courses (course_code, course_name, schedule_slot) VALUES
-('INT001', 'Inteligência Artificial', 'D'),
-('INT002', 'Machine Learning', 'F'),
-('INT003', 'Processamento de Linguagem Natural', 'G');
+INSERT INTO items (code, type, name, available) VALUES
+('PER-001', 'PERIPHERAL', 'Multimedia Projector', TRUE),
+('PER-002', 'PERIPHERAL', 'Dell i5 Notebook', TRUE),
+('PER-003', 'PERIPHERAL', 'Canon Digital Camera', TRUE),
+('PER-004', 'PERIPHERAL', 'Wireless Microphone', TRUE),
+('PER-005', 'PERIPHERAL', '24 Port Switch', TRUE),
+('PER-006', 'PERIPHERAL', 'Wi-Fi Router', TRUE);
 
-INSERT INTO enrollments (student_id, course_id) VALUES
-(1, 1),   
-(1, 7),  
-(1, 13),
-(1, 16), 
-(1, 21); 
+INSERT INTO items (code, type, name, available) VALUES
+('ROOM-001', 'ROOM', 'Classroom 101', TRUE),
+('ROOM-002', 'ROOM', 'Classroom 102', TRUE),
+('ROOM-003', 'ROOM', 'Main Auditorium', TRUE),
+('ROOM-004', 'ROOM', 'Meeting Room', TRUE);
 
-INSERT INTO enrollments (student_id, course_id) VALUES
-(2, 2),  
-(2, 9),  
-(2, 11), 
-(2, 20);  
+INSERT INTO reservations (code, user_id, item_id, schedule, reservation_date, status) VALUES
+('RES-001', 1, 1, 'MON-14', '2025-11-05', 'ACTIVE'),
+('RES-002', 2, 2, 'TUE-10', '2025-11-05', 'ACTIVE'),
+('RES-003', 3, 6, 'WED-08', '2025-11-06', 'ACTIVE'),
+('RES-004', 4, 7, 'THU-14', '2025-11-06', 'ACTIVE'),
+('RES-005', 5, 3, 'FRI-10', '2025-11-07', 'ACTIVE'),
+('RES-006', 11, 11, 'MON-08', '2025-11-08', 'ACTIVE'),
+('RES-007', 12, 12, 'TUE-14', '2025-11-08', 'ACTIVE');
 
-INSERT INTO enrollments (student_id, course_id) VALUES
-(3, 1), 
-(3, 4), 
-(3, 11),
-(3, 18), 
-(3, 24),  
-(3, 27);  
-
-INSERT INTO enrollments (student_id, course_id) VALUES
-(4, 12),
-(4, 14), 
-(4, 22); 
-
-INSERT INTO enrollments (student_id, course_id) VALUES
-(5, 3),
-(5, 8),  
-(5, 15), 
-(5, 23),  
-(5, 30);  
-
-INSERT INTO enrollments (student_id, course_id) VALUES
-(6, 6),   
-(6, 17), 
-(6, 25), 
-(6, 31); 
-
-INSERT INTO enrollments (student_id, course_id) VALUES
-(7, 10),  
-(7, 19), 
-(7, 28); 
-
-INSERT INTO enrollments (student_id, course_id) VALUES
-(8, 1),  
-(8, 11), 
-(8, 16),  
-(8, 26); 
-
-INSERT INTO enrollments (student_id, course_id) VALUES
-(9, 2),   
-(9, 13), 
-(9, 20),  
-(9, 27), 
-(9, 9);   
-
-INSERT INTO enrollments (student_id, course_id) VALUES
-(10, 4), 
-(10, 12),
-(10, 16); 
-
-INSERT INTO enrollments (student_id, course_id) VALUES
-(11, 5),  
-(11, 8),  
-(11, 15),
-(11, 30);
-
-INSERT INTO enrollments (student_id, course_id) VALUES
-(12, 3),  
-(12, 14), 
-(12, 29); 
-
-INSERT INTO enrollments (student_id, course_id) VALUES
-(13, 6), 
-(13, 17),
-(13, 25),
-(13, 31); 
-
-INSERT INTO enrollments (student_id, course_id) VALUES
-(14, 10), 
-(14, 32); 
-
-INSERT INTO enrollments (student_id, course_id) VALUES
-(15, 1), 
-(15, 7), 
-(15, 18),
-(15, 24), 
-(15, 11); 
-
-SELECT 'Estudantes cadastrados:' AS info, COUNT(*) AS total FROM students
-UNION ALL
-SELECT 'Disciplinas cadastradas:', COUNT(*) FROM courses
-UNION ALL
-SELECT 'Matrículas realizadas:', COUNT(*) FROM enrollments;
-
-SELECT 
-    c.course_code,
-    c.course_name,
-    c.schedule_slot,
-    COUNT(e.id) as total_matriculas
-FROM courses c
-LEFT JOIN enrollments e ON c.id = e.course_id
-GROUP BY c.id, c.course_code, c.course_name, c.schedule_slot
-ORDER BY total_matriculas DESC, c.course_code, c.schedule_slot
-LIMIT 10;
-
-SELECT 
-    s.name,
-    s.registration_number,
-    COUNT(e.id) as total_disciplinas
-FROM students s
-LEFT JOIN enrollments e ON s.id = e.student_id
-GROUP BY s.id, s.name, s.registration_number
-ORDER BY total_disciplinas DESC
-LIMIT 10;
+INSERT INTO schedules (day_week, due_hour, start_hour) VALUES
+('MONDAY', '10:00:00', '08:00:00'),
+('MONDAY', '12:00:00', '10:00:00'),
+('MONDAY', '16:00:00', '14:00:00'),
+('TUESDAY', '10:00:00', '08:00:00'),
+('TUESDAY', '12:00:00', '10:00:00'),
+('TUESDAY', '16:00:00', '14:00:00'),
+('WEDNESDAY', '10:00:00', '08:00:00'),
+('WEDNESDAY', '12:00:00', '10:00:00'),
+('WEDNESDAY', '16:00:00', '14:00:00'),
+('THURSDAY', '10:00:00', '08:00:00'),
+('THURSDAY', '12:00:00', '10:00:00'),
+('THURSDAY', '16:00:00', '14:00:00'),
+('FRIDAY', '10:00:00', '08:00:00'),
+('FRIDAY', '12:00:00', '10:00:00'),
+('FRIDAY', '16:00:00', '14:00:00');
