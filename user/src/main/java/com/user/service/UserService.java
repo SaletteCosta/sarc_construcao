@@ -51,7 +51,15 @@ public class UserService {
             .map(this::toDTO)
             .collect(Collectors.toList());
     }
-    
+
+    public List<UserDTO> getUsersByType(String type) {
+        UserType userType = UserType.valueOf(type.toUpperCase());
+        return userRepository.findByType(userType)
+            .stream()
+            .map(this::toDTO)
+            .collect(Collectors.toList());
+    }
+
     private UserDTO toDTO(User user) {
         return new UserDTO(user.getId(), user.getName(), user.getRegistration(), user.getType().name());
     }

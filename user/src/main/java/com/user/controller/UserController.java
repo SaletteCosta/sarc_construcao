@@ -47,7 +47,17 @@ public class UserController {
         List<UserDTO> users = userService.getUsersByName(name);
         return ResponseEntity.ok(users);
     }
-    
+
+    @GetMapping("/type/{type}")
+    public ResponseEntity<List<UserDTO>> getUsersByType(@PathVariable String type) {
+        try {
+            List<UserDTO> users = userService.getUsersByType(type);
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("User service is healthy");
