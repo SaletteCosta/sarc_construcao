@@ -1,17 +1,19 @@
 import axios from 'axios';
 
-const ADMIN_SERVICE_URL = import.meta.env.VITE_ADMIN_SERVICE_URL || 'http://localhost:8084';
-const USER_SERVICE_URL = import.meta.env.VITE_USER_SERVICE_URL || 'http://localhost:8085';
+// API Gateway URL - centralized access point
+const API_GATEWAY_URL = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8080';
 
+// Admin Service routes through API Gateway
 export const adminApi = axios.create({
-  baseURL: ADMIN_SERVICE_URL,
+  baseURL: `${API_GATEWAY_URL}/api/admin`,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
+// User Service routes through API Gateway
 export const userApi = axios.create({
-  baseURL: USER_SERVICE_URL,
+  baseURL: `${API_GATEWAY_URL}/api/user`,
   headers: {
     'Content-Type': 'application/json',
   },
