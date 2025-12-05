@@ -111,7 +111,30 @@ public class ReservationService {
             .map(this::toDTO)
             .collect(Collectors.toList());
     }
-    
+
+    @Transactional
+    public ReservationDTO updateReservation(Long id, ReservationDTO reservationDTO) {
+        Reservation reservation = reservationRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + id));
+
+        if (reservationDTO.getSchedule() != null) {
+            reservation.setSchedule(reservationDTO.getSchedule());
+        }
+        if (reservationDTO.getStatus() != null) {
+            reservation.setStatus(ReservationStatus.valueOf(reservationDTO.getStatus()));
+        }
+        Reservation updated = reservationRepository.save(reservation);
+        return toDTO(updated);
+    }
+
+    @Transactional
+    public void deleteReservation(Long id) {
+        if (!reservationRepository.existsById(id)) {
+            throw new RuntimeException("Reservation not found with id: " + id);
+        }
+        reservationRepository.deleteById(id);
+    }
+
     private ReservationDTO toDTO(Reservation reservation) {
         return new ReservationDTO(
             reservation.getId(),

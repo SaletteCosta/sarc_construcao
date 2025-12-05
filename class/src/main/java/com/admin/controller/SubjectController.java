@@ -47,7 +47,27 @@ public class SubjectController {
         List<SubjectDTO> subjects = subjectService.getAllSubjects();
         return ResponseEntity.ok(subjects);
     }
-    
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SubjectDTO> updateSubject(@PathVariable Long id, @RequestBody SubjectDTO subjectDTO) {
+        try {
+            SubjectDTO updated = subjectService.updateSubject(id, subjectDTO);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSubject(@PathVariable Long id) {
+        try {
+            subjectService.deleteSubject(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Subject service is healthy");

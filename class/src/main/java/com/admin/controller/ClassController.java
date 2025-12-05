@@ -82,7 +82,27 @@ public class ClassController {
         List<ClassDTO> classes = classService.getAllClasses();
         return ResponseEntity.ok(classes);
     }
-    
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ClassDTO> updateClass(@PathVariable Long id, @RequestBody ClassDTO classDTO) {
+        try {
+            ClassDTO updated = classService.updateClass(id, classDTO);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteClass(@PathVariable Long id) {
+        try {
+            classService.deleteClass(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Class service is healthy");

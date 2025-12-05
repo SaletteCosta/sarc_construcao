@@ -49,7 +49,25 @@ public class SubjectService {
             .map(this::toDTO)
             .collect(Collectors.toList());
     }
-    
+
+    @Transactional
+    public SubjectDTO updateSubject(Long id, SubjectDTO subjectDTO) {
+        Subject subject = subjectRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Subject not found with id: " + id));
+
+        subject.setName(subjectDTO.getName());
+        Subject updated = subjectRepository.save(subject);
+        return toDTO(updated);
+    }
+
+    @Transactional
+    public void deleteSubject(Long id) {
+        if (!subjectRepository.existsById(id)) {
+            throw new RuntimeException("Subject not found with id: " + id);
+        }
+        subjectRepository.deleteById(id);
+    }
+
     private SubjectDTO toDTO(Subject subject) {
         return new SubjectDTO(subject.getId(), subject.getCode(), subject.getName());
     }
