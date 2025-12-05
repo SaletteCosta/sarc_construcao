@@ -65,7 +65,17 @@ public class ClassService {
             .map(this::toDTO)
             .collect(Collectors.toList());
     }
-    
+
+    public List<ClassDTO> getClassesBySubject(Long subjectId) {
+        if (!subjectRepository.existsById(subjectId)) {
+            throw new RuntimeException("Subject not found with id: " + subjectId);
+        }
+        return classRepository.findBySubjectId(subjectId)
+            .stream()
+            .map(this::toDTO)
+            .collect(Collectors.toList());
+    }
+
     @Transactional
     public void addStudentToClass(String classCode, Long studentId) {
         ClassEntity classEntity = classRepository.findByCode(classCode)

@@ -52,7 +52,17 @@ public class ClassController {
         List<ClassDTO> classes = classService.getClassesByStudent(studentId);
         return ResponseEntity.ok(classes);
     }
-    
+
+    @GetMapping("/subject/{subjectId}")
+    public ResponseEntity<List<ClassDTO>> getClassesBySubject(@PathVariable Long subjectId) {
+        try {
+            List<ClassDTO> classes = classService.getClassesBySubject(subjectId);
+            return ResponseEntity.ok(classes);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PostMapping("/code/{code}/students/{studentId}")
     public ResponseEntity<Void> addStudentToClass(
             @PathVariable String code,
