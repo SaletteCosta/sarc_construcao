@@ -26,6 +26,9 @@ docker compose up --build
 
 ##  Arquitetura de Microserviços
 
+### Frontend
+- **Frontend** (3000): Interface web React
+
 ### Serviços de Negócio
 - **Admin Service** (8084→8081): Gerencia turmas, disciplinas e professores
 - **User Service** (8085→8082): Gerencia usuários e reservas
@@ -50,6 +53,9 @@ cd user && mvn test
 
 ##  Documentação
 
+### Frontend
+- **Frontend**: http://localhost:3000
+
 ### APIs
 - **API Gateway**: http://localhost:8080
   - Admin endpoints: `/api/admin/**`
@@ -62,8 +68,6 @@ cd user && mvn test
 - **Prometheus**: http://localhost:9090
 - **Grafana**: http://localhost:3000 (admin/admin)
 
-📖 **Documentação Completa de Observabilidade**: Ver [OBSERVABILITY.md](OBSERVABILITY.md)
-
 ##  Tecnologias
 
 ### Backend
@@ -73,6 +77,14 @@ cd user && mvn test
 - Spring Data JPA
 - PostgreSQL 16
 - Maven
+
+### Frontend
+- React 18
+- Vite
+- React Router
+- Axios
+- TailwindCSS
+- Lucide Icons
 
 ### Arquitetura e Infraestrutura
 - **Spring Cloud Gateway**: API Gateway
@@ -86,6 +98,33 @@ cd user && mvn test
 - **Grafana**: Visualização e dashboards
 - **OpenTelemetry**: Padrão de observabilidade
 
+##  Desenvolvimento Local
+
+### Executar apenas o frontend (modo desenvolvimento)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+O frontend estará disponível em http://localhost:5173
+
+**Nota**: Certifique-se de que os serviços backend estão rodando via API Gateway (porta 8080)
+
+### Executar todo o sistema com Docker
+
+```bash
+docker compose up --build
+```
+
+Acesse:
+- Frontend: http://localhost:3000
+- API Gateway: http://localhost:8080
+- Eureka Dashboard: http://localhost:8761
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3000 (admin/admin)
+
 ##  Comandos Úteis
 
 ```bash
@@ -98,7 +137,47 @@ docker compose down -v
 # Ver logs
 docker compose logs -f
 
+# Ver logs de um serviço específico
+docker compose logs -f frontend
+docker compose logs -f admin-service
+
 # Reconstruir
 docker compose up --build
+
+# Reconstruir apenas o frontend
+docker compose up --build frontend
 ```
+
+##  Funcionalidades do Frontend
+
+### Dashboard
+- Visão geral de todos os recursos do sistema
+- Estatísticas em tempo real
+- Ações rápidas para navegação
+
+### Gerenciamento de Disciplinas
+- Criar, editar e excluir disciplinas
+- Visualizar lista completa de disciplinas
+
+### Gerenciamento de Turmas
+- Criar novas turmas vinculadas a disciplinas
+- Adicionar alunos às turmas
+- Atualizar horários das turmas
+- Visualizar turmas por aluno
+
+### Gerenciamento de Usuários
+- CRUD completo de usuários
+- Filtrar por tipo (Aluno, Professor, Admin)
+- Badges visuais para identificação rápida
+
+### Gerenciamento de Recursos
+- Cadastrar laboratórios, periféricos, salas e equipamentos
+- Controlar disponibilidade
+- Filtrar por tipo de recurso
+
+### Sistema de Reservas
+- Criar reservas de recursos
+- Visualizar todas as reservas
+- Filtrar por status (Ativa, Cancelada, Concluída)
+- Estatísticas de uso
 
