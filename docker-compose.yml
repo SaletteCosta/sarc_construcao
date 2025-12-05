@@ -137,11 +137,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - VITE_API_GATEWAY_URL=http://localhost:8080
     container_name: frontend
     ports:
       - "3000:80"
-    environment:
-      - VITE_API_GATEWAY_URL=http://localhost:8080
     depends_on:
       - api-gateway
     networks:

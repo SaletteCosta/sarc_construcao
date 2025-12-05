@@ -12,6 +12,10 @@ RUN npm install
 # Copy source code
 COPY . .
 
+# Set API Gateway URL for build
+ARG VITE_API_GATEWAY_URL=http://localhost:8080
+ENV VITE_API_GATEWAY_URL=$VITE_API_GATEWAY_URL
+
 # Build the application
 RUN npm run build
 
