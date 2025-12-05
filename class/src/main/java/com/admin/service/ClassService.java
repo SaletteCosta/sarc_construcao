@@ -85,12 +85,35 @@ public class ClassService {
     public ClassDTO updateSchedule(String code, String schedule) {
         ClassEntity classEntity = classRepository.findByCode(code)
             .orElseThrow(() -> new RuntimeException("Class not found with code: " + code));
-        
+
         classEntity.setSchedule(schedule);
         ClassEntity updated = classRepository.save(classEntity);
         return toDTO(updated);
     }
-    
+
+    @Transactional
+    public ClassDTO updateClass(Long id, ClassDTO classDTO) {
+        ClassEntity classEntity = classRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Class not found with id: " + id));
+
+        if (!subjectRepository.existsById(classDTO.getSubjectId())) {
+            throw new RuntimeException("Subject not found with id: " + classDTO.getSubjectId());
+        }
+
+        classEntity.setSubjectId(classDTO.getSubjectId());
+        classEntity.setSchedule(classDTO.getSchedule());
+        ClassEntity updated = classRepository.save(classEntity);
+        return toDTO(updated);
+    }
+
+    @Transactional
+    public void deleteClass(Long id) {
+        if (!classRepository.existsById(id)) {
+            throw new RuntimeException("Class not found with id: " + id);
+        }
+        classRepository.deleteById(id);
+    }
+
     private ClassDTO toDTO(ClassEntity classEntity) {
         return new ClassDTO(
             classEntity.getId(),

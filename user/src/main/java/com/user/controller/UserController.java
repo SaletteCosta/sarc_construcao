@@ -47,7 +47,37 @@ public class UserController {
         List<UserDTO> users = userService.getUsersByName(name);
         return ResponseEntity.ok(users);
     }
-    
+
+    @GetMapping("/type/{type}")
+    public ResponseEntity<List<UserDTO>> getUsersByType(@PathVariable String type) {
+        try {
+            List<UserDTO> users = userService.getUsersByType(type);
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
+        try {
+            UserDTO updated = userService.updateUser(id, userDTO);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        try {
+            userService.deleteUser(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("User service is healthy");
