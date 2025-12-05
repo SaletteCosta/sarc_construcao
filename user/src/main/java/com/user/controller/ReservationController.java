@@ -86,7 +86,27 @@ public class ReservationController {
         List<ReservationDTO> reservations = reservationService.getLaboratoriesByStudentRegistration(registration);
         return ResponseEntity.ok(reservations);
     }
-    
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ReservationDTO> updateReservation(@PathVariable Long id, @RequestBody ReservationDTO reservationDTO) {
+        try {
+            ReservationDTO updated = reservationService.updateReservation(id, reservationDTO);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteReservation(@PathVariable Long id) {
+        try {
+            reservationService.deleteReservation(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Reservation service is healthy");

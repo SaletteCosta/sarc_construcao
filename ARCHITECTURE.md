@@ -1,280 +1,221 @@
-# Arquitetura do Sistema Closed CRAS
+# Arquitetura do Sistema SARC
 
 ## Visão Geral
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                         FRONTEND                            │
-│                    React + TailwindCSS                      │
-│                     (Port: 3000)                            │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           │ HTTP Requests
-                           ▼
-                  ┌────────────────────┐
-                  │    API GATEWAY     │
-                  │  Spring Cloud GW   │
-                  │   (Port: 8080)     │
-                  └────────┬───────────┘
-                           │
-            ┌──────────────┼──────────────┐
-            │              │              │
-            ▼              ▼              ▼
-    ┌───────────┐  ┌──────────────┐  ┌──────────┐
-    │  Eureka   │  │ Admin Service│  │  User    │
-    │  Server   │  │ Spring Boot  │  │ Service  │
-    │  (8761)   │  │  (8084→8081) │  │ (8085→   │
-    └───────────┘  └──────┬───────┘  └───┬──────┘
-                          │              │
-                          └──────┬───────┘
-                                 │
-                        ┌────────▼─────────┐
-                        │   PostgreSQL 16  │
-                        │   (Port: 5433)   │
-                        └──────────────────┘
+O SARC (Sistema de Agendamento de Recursos Acadêmicos) é uma aplicação de microserviços desenvolvida para gerenciar recursos acadêmicos como salas, laboratórios, equipamentos e suas reservas.
 
-Observabilidade:
-Services → Prometheus (9090) → Grafana (3000)
-```
+## Padrão Arquitetural
 
-## Componentes
+A aplicação segue o padrão de **Microserviços** com as seguintes características:
 
-### 1. Frontend (React)
+- Separação de responsabilidades por domínio de negócio
+- Comunicação via API REST
+- Service Discovery para localização dinâmica de serviços
+- API Gateway como ponto único de entrada
+- Observabilidade centralizada com Prometheus e Grafana
 
-**Tecnologias**: React 18, Vite, TailwindCSS, React Router, Axios
+## Componentes Principais
 
-**Páginas**:
-- Dashboard - Visão geral e estatísticas
-- Subjects - Gerenciamento de disciplinas
-- Classes - Gerenciamento de turmas
-- Users - Gerenciamento de usuários
-- Items - Gerenciamento de recursos
-- Reservations - Sistema de reservas
+### 1. Eureka Server (Porta 8761)
+**Responsabilidade:** Service Discovery
 
-**Componentes**:
-- Layout (Header, Sidebar)
-- Common (Modal, Table, LoadingSpinner)
+- Registro e descoberta de serviços
+- Health checks automáticos
+- Load balancing dinâmico
 
-**Serviços**:
-- API Client (Axios)
-- Subject Service
-- Class Service
-- User Service
-- Reservation Service
+### 2. API Gateway (Porta 8080)
+**Responsabilidade:** Ponto único de entrada e roteamento
 
-### 2. Admin Service (Spring Boot)
+- Roteamento de requisições para microserviços
+- CORS centralizado
+- Load balancing com Ribbon
+- Métricas e observabilidade
 
-**Responsabilidades**:
-- Gerenciar disciplinas (CRUD)
-- Gerenciar turmas (CRUD)
-- Relacionar alunos com turmas
-- Atualizar horários
+**Rotas configuradas:**
+- `/api/admin/**` → Admin Service
+- `/api/user/**` → User Service
 
-**Endpoints**:
-```
-GET    /subjects
-POST   /subjects
-GET    /subjects/code/{code}
-PUT    /subjects/{id}
-DELETE /subjects/{id}
+### 3. Admin Service (Porta 8081)
+**Responsabilidade:** Gestão de recursos acadêmicos
 
-GET    /classes
-POST   /classes
-GET    /classes/code/{code}
-GET    /classes/student/{studentId}
-POST   /classes/code/{code}/students/{studentId}
-POST   /classes/code/{code}/schedule
-GET    /classes/code/{code}/schedule
-```
+**Entidades:**
+- `Subject` - Disciplinas
+- `Class` - Turmas
 
-**Entidades**:
-- Subject
-- ClassEntity
-- ClassStudent
+**Endpoints REST:**
+- `GET /subjects` - Lista disciplinas
+- `POST /subjects` - Cria disciplina
+- `PUT /subjects/{id}` - Atualiza disciplina
+- `DELETE /subjects/{id}` - Remove disciplina
+- `GET /classes` - Lista turmas
+- `POST /classes` - Cria turma
+- `PUT /classes/{id}` - Atualiza turma
+- `DELETE /classes/{id}` - Remove turma
 
-### 3. User Service (Spring Boot)
+### 4. User Service (Porta 8082)
+**Responsabilidade:** Gestão de usuários e reservas
 
-**Responsabilidades**:
-- Gerenciar usuários (CRUD)
-- Gerenciar itens/recursos (CRUD)
-- Gerenciar reservas (CRUD)
-- Filtrar recursos por tipo
-- Consultar reservas por usuário/horário
+**Entidades:**
+- `User` - Usuários (STUDENT, TEACHER, ADMIN)
+- `Item` - Equipamentos/Recursos (LABORATORY, CLASSROOM, EQUIPMENT, PERIPHERAL)
+- `Reservation` - Reservas de recursos
 
-**Endpoints**:
-```
-GET    /users
-POST   /users
-GET    /users/registration/{registration}
-GET    /users/type/{type}
-PUT    /users/{id}
-DELETE /users/{id}
+**Endpoints REST:**
+- `GET /users` - Lista usuários
+- `POST /users` - Cria usuário
+- `PUT /users/{id}` - Atualiza usuário
+- `DELETE /users/{id}` - Remove usuário
+- `GET /items` - Lista itens
+- `POST /items` - Cria item
+- `PUT /items/{id}` - Atualiza item
+- `DELETE /items/{id}` - Remove item
+- `GET /reservations` - Lista reservas
+- `POST /reservations` - Cria reserva
+- `PUT /reservations/{id}` - Atualiza reserva
+- `DELETE /reservations/{id}` - Remove reserva
 
-GET    /items
-POST   /items
-GET    /items/code/{code}
-PUT    /items/{id}
-DELETE /items/{id}
+### 5. PostgreSQL Databases
+**Responsabilidade:** Persistência de dados
 
-GET    /reservations
-POST   /reservations
-POST   /reservations/peripheral
-GET    /reservations/code/{code}
-GET    /reservations/schedule/{schedule}
-GET    /reservations/user?userId={id}
-GET    /reservations/items/type?type={type}
-GET    /reservations/student/{registration}/laboratories
-```
+- `admin_db` (Porta 5432) - Banco do Admin Service
+- `user_db` (Porta 5433) - Banco do User Service
 
-**Entidades**:
-- User
-- Item
-- Reservation
+### 6. Monitoring Stack
 
-### 4. PostgreSQL Database
+**Prometheus (Porta 9090):**
+- Coleta de métricas dos serviços
+- Scraping automático via service discovery
+- Armazenamento de séries temporais
 
-**Tabelas**:
-- subjects - Disciplinas
-- classes - Turmas
-- users - Usuários (alunos, professores, admin)
-- class_students - Relação N:N entre turmas e alunos
-- items - Recursos (labs, periféricos, salas, equipamentos)
-- reservations - Reservas de recursos
-- schedules - Horários disponíveis
+**Grafana (Porta 3001):**
+- Visualização de métricas
+- Dashboards pré-configurados
+- Alertas e monitoramento
 
-**Features**:
-- Foreign Keys com CASCADE
-- Índices otimizados
-- Triggers para updated_at
-- Constraints de integridade
-
-## Fluxo de Dados
-
-### Criar uma Reserva
-
-```
-1. Usuário acessa frontend (localhost:3000/reservations)
-2. Frontend busca lista de usuários (User Service)
-3. Frontend busca lista de itens disponíveis (User Service)
-4. Usuário preenche formulário
-5. Frontend envia POST /reservations (User Service)
-6. User Service valida e salva no PostgreSQL
-7. Frontend atualiza lista de reservas
-```
-
-### Adicionar Aluno a uma Turma
-
-```
-1. Usuário acessa frontend (localhost:3000/classes)
-2. Frontend busca turmas (Admin Service)
-3. Frontend busca alunos (User Service)
-4. Usuário seleciona turma e aluno
-5. Frontend envia POST /classes/code/{code}/students/{id} (Admin Service)
-6. Admin Service cria registro em class_students (PostgreSQL)
-7. Frontend confirma sucesso
-```
-
-## Padrões de Design
+## Tecnologias Utilizadas
 
 ### Backend
-- **Repository Pattern**: Acesso a dados
-- **Service Layer**: Lógica de negócio
-- **DTO Pattern**: Transferência de dados
-- **RESTful API**: Comunicação HTTP
+- **Java 17** - Linguagem de programação
+- **Spring Boot 3.3.4** - Framework base
+- **Spring Cloud 2023.0.3** - Ferramentas para microserviços
+- **Netflix Eureka** - Service Discovery
+- **Spring Cloud Gateway** - API Gateway
+- **Spring Data JPA** - Persistência
+- **PostgreSQL 16** - Banco de dados
+- **Micrometer + Prometheus** - Métricas
+- **Lombok** - Redução de boilerplate
 
 ### Frontend
-- **Component-Based**: React components
-- **Service Layer**: API services
-- **Container/Presentational**: Separação de lógica
-- **Controlled Components**: Forms
+- **React 18** - Framework UI
+- **Vite** - Build tool
+- **React Router** - Navegação
+- **Axios** - Cliente HTTP
+- **Tailwind CSS** - Estilização
+- **Lucide React** - Ícones
 
-## Segurança
+### DevOps
+- **Docker** - Containerização
+- **Docker Compose** - Orquestração local
+- **Nginx** - Servidor web do frontend
 
-### Backend
-- CORS configurado
-- Validation de inputs
-- Error handling
+## Fluxo de Comunicação
 
-### Frontend
-- Environment variables para URLs
-- Client-side validation
-- Error boundaries
+```
+Cliente → Frontend (Nginx:80)
+           ↓
+    API Gateway (:8080)
+           ↓
+    Eureka Server (:8761)
+           ↓
+    ┌──────┴──────┐
+    ↓             ↓
+Admin Service  User Service
+  (:8081)        (:8082)
+    ↓             ↓
+ admin_db      user_db
+ (:5432)       (:5433)
+```
 
-### Database
-- Constraints de integridade
-- Foreign keys com CASCADE
-- Unique constraints
+## Padrões de Design Aplicados
 
-## Performance
+### 1. API Gateway Pattern
+- Ponto único de entrada
+- Roteamento centralizado
+- CORS e segurança centralizados
 
-### Backend
-- Connection pooling (HikariCP)
-- Lazy loading (JPA)
-- Índices em queries frequentes
+### 2. Service Discovery Pattern
+- Registro automático de serviços
+- Descoberta dinâmica
+- Health checks
 
-### Frontend
-- Code splitting (Vite)
-- Lazy loading de rotas
-- React optimizations
+### 3. Repository Pattern
+- Abstração de acesso a dados
+- Separação de lógica de negócio e persistência
 
-### Database
-- Índices em colunas de busca
-- Views para queries complexas
-- Connection pooling
+### 4. DTO Pattern
+- Transferência de dados entre camadas
+- Desacoplamento de entidades
+
+### 5. Layered Architecture
+- Controller → Service → Repository
+- Separação clara de responsabilidades
 
 ## Escalabilidade
 
-### Horizontal
-- Frontend: Múltiplas instâncias Nginx
-- Backend: Stateless services (fácil replicação)
-- Database: Read replicas (potencial)
+O sistema permite escalabilidade horizontal:
 
-### Vertical
-- Aumentar recursos dos containers
-- Otimizar queries do banco
-- Cache em memória (futuro)
+- Múltiplas instâncias de cada microserviço
+- Load balancing automático via Ribbon
+- Service Discovery dinâmico
+- Bancos de dados independentes por serviço
 
-## Monitoramento
+## Observabilidade
 
-### Docker
-```bash
-docker compose logs -f
-docker compose ps
-docker stats
-```
+### Métricas Coletadas
+- Requisições HTTP (taxa, latência, erros)
+- JVM (memória, GC, threads)
+- Eureka (serviços registrados, status)
+- Negócio (operações CRUD)
 
-### Health Checks
-- Admin Service: /health
-- User Service: /health
-- PostgreSQL: pg_isready
+### Dashboards
+- Visão geral do sistema
+- Performance por serviço
+- Saúde da infraestrutura
+
+## Segurança
+
+Implementações atuais:
+- CORS configurado no API Gateway
+- Validação de dados nos endpoints
+- Headers de segurança no Nginx
+
+Melhorias futuras:
+- Autenticação JWT
+- Autorização baseada em roles
+- Rate limiting
+- HTTPS
 
 ## Deployment
 
-### Desenvolvimento
+### Ambiente de Desenvolvimento
 ```bash
-docker compose up --build
+docker-compose up --build
 ```
 
-### Produção
-1. Build das imagens
-2. Push para registry
-3. Deploy em cluster (Kubernetes/Docker Swarm)
-4. Configure load balancer
-5. Setup SSL/TLS
-6. Configure backup do banco
+Todos os serviços são iniciados automaticamente com suas dependências.
 
-## Tecnologias e Versões
+### Ordem de Inicialização
+1. Bancos de dados (PostgreSQL)
+2. Eureka Server
+3. API Gateway (aguarda Eureka)
+4. Microserviços (aguardam Eureka e bancos)
+5. Frontend (aguarda API Gateway)
+6. Monitoring (Prometheus, Grafana)
 
-| Componente      | Tecnologia        | Versão |
-|-----------------|-------------------|--------|
-| Frontend        | React             | 18.x   |
-| Build Tool      | Vite              | 5.x    |
-| Styling         | TailwindCSS       | 3.x    |
-| Backend         | Spring Boot       | 3.x    |
-| Java            | OpenJDK           | 17     |
-| Database        | PostgreSQL        | 16     |
-| Web Server      | Nginx             | Alpine |
-| Container       | Docker            | 24.x   |
-| Orchestration   | Docker Compose    | 3.8    |
+## Referências
 
-
+- [Spring Cloud Documentation](https://spring.io/projects/spring-cloud)
+- [Netflix Eureka](https://github.com/Netflix/eureka)
+- [Spring Cloud Gateway](https://spring.io/projects/spring-cloud-gateway)
+- [Prometheus](https://prometheus.io/docs/)
+- [Grafana](https://grafana.com/docs/)

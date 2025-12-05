@@ -60,6 +60,27 @@ public class UserService {
             .collect(Collectors.toList());
     }
 
+    @Transactional
+    public UserDTO updateUser(Long id, UserDTO userDTO) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        user.setName(userDTO.getName());
+        if (userDTO.getType() != null) {
+            user.setType(UserType.valueOf(userDTO.getType()));
+        }
+        User updated = userRepository.save(user);
+        return toDTO(updated);
+    }
+
+    @Transactional
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User not found with id: " + id);
+        }
+        userRepository.deleteById(id);
+    }
+
     private UserDTO toDTO(User user) {
         return new UserDTO(user.getId(), user.getName(), user.getRegistration(), user.getType().name());
     }
